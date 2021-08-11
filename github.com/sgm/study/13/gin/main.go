@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/testdata/protoexample"
 	"log"
 	"net/http"
 )
@@ -99,6 +100,10 @@ func main() {
 	getJson(r)
 	loginForm(r)
 	loginUri(r)
+	structResponse(r)
+	YAMLResponse(r)
+	xmlResponse(r)
+	protobufResponse(r)
 
 	// 3、监听端口
 	r.Run(":8111")
@@ -177,5 +182,50 @@ func loginUri(r *gin.Engine) {
 		}
 
 		c.JSON(http.StatusOK, gin.H{"status": "200"})
+	})
+}
+
+// 结构体响应
+func structResponse(r *gin.Engine) {
+	r.GET("/someStruct", func(c *gin.Context) {
+		var msg struct {
+			Name    string
+			Message string
+			Number  int
+		}
+		msg.Name = "root"
+		msg.Message = "message"
+		msg.Number = 123
+		c.JSON(200, msg)
+	})
+}
+
+// xml响应
+func xmlResponse(r *gin.Engine) {
+	r.GET("/someXML", func(c *gin.Context) {
+		c.XML(200, gin.H{"message": "abc"})
+	})
+}
+
+// YAMl响应
+func YAMLResponse(r *gin.Engine) {
+	r.GET("/someYAML", func(c *gin.Context) {
+		c.YAML(200, gin.H{"message": "abc"})
+	})
+}
+
+// protobuf格式，谷歌开发的高效存储读取的工具
+// 数组？切片？如果自己构建一个传输格式，应该是什么格式？
+func protobufResponse(r *gin.Engine) {
+	r.GET("/someProtoBuf", func(c *gin.Context) {
+		reps := []int64{int64(1), int64(2)}
+		// 定义数据
+		label := "label"
+		// 传protobuf格式数据
+		data := &protoexample.Test{
+			Label: &label,
+			Reps:  reps,
+		}
+		c.ProtoBuf(200, data)
 	})
 }
